@@ -121,7 +121,21 @@ Errors always look like `{"code": "version_conflict", "detail": "...", "details"
 - **Burndown formula**: scope changes + timezone-correct daily sums → [docs/LOGIC.md](docs/LOGIC.md)
 
 ## Screenshots
-Coming soon: board, task detail, backlog, sprint burndown and members.
+Demo data from `seed_demo`, logged in as `demo_manager`.
+
+**Kanban board**: drag-and-drop; the server checks workflow, blockers and versions on every move.
+
+![Kanban board](docs/screenshots/board.png)
+
+**Sprint with burndown and velocity**
+
+![Sprint burndown and velocity](docs/screenshots/burndown.png)
+
+| Task detail | Backlog & sprints |
+|---|---|
+| ![Task detail](docs/screenshots/task.png) | ![Backlog and sprints](docs/screenshots/backlog.png) |
+| **Dashboard** | **Members & roles** |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Members and roles](docs/screenshots/members.png) |
 
 ## Documentation
 [Beginner guide](docs/BEGINNER_GUIDE.md) · [Setup](docs/SETUP.md) ·
