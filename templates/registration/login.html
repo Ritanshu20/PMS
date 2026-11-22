@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="card auth-card">
+    <span class="brand-mark">P</span>
+    <h1 class="h4 mb-1">Welcome back</h1>
+    <p class="text-muted small mb-4">Log in to your projects.</p>
+    {% if throttle_error %}
+      <div class="alert alert-danger">{{ throttle_error }}</div>
+    {% elif form.non_field_errors %}
+      <div class="alert alert-danger">{% for error in form.non_field_errors %}{{ error }} {% endfor %}</div>
+    {% elif form.errors %}
+      <div class="alert alert-danger">Please enter your username and password.</div>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <div class="mb-3">
+        <label class="form-label small fw-medium" for="id_username">Username</label>
+        <input class="form-control" id="id_username" name="username" autocomplete="username" required autofocus>
+      </div>
+      <div class="mb-4">
+        <label class="form-label small fw-medium" for="id_password">Password</label>
+        <input class="form-control" id="id_password" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn btn-primary w-100" type="submit">Log in</button>
+    </form>
+    <p class="mt-4 mb-0 small text-center text-muted">No account? <a href="{% url 'register' %}">Create one</a></p>
+  </div>
+</div>
+{% endblock %}

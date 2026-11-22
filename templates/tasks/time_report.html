@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ project.key }} time report{% endblock %}
+{% block content %}
+{% include "partials/project_nav.html" %}
+<p class="small text-muted">Log time on a task's page. Times are in minutes.</p>
+<div class="row g-3">
+  <div class="col-12 col-xl-7">
+    <div class="card">
+      <div class="card-header py-2 small fw-semibold">Estimate vs logged, per task</div>
+      <div class="table-responsive">
+        <table class="table table-sm mb-0">
+          <thead><tr><th>Task</th><th class="text-end">Estimate</th><th class="text-end">Logged</th><th class="text-end">% of estimate</th></tr></thead>
+          <tbody>
+            {% for row in by_task %}
+              <tr class="{% if row.over_estimate %}table-warning{% endif %}">
+                <td><a href="{% url 'web-task-detail' project.pk row.number %}">{{ project.key }}-{{ row.number }}</a> {{ row.title }}</td>
+                <td class="text-end">{{ row.estimate_minutes|default_if_none:"-" }}</td>
+                <td class="text-end">{{ row.logged_minutes }}</td>
+                <td class="text-end">{% if row.percent_of_estimate is not None %}{{ row.percent_of_estimate }}%{% else %}-{% endif %}</td>
+              </tr>
+            {% empty %}<tr><td colspan="4" class="text-muted">No time logged and no estimates yet.</td></tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-xl-5">
+    <div class="card mb-3">
+      <div class="card-header py-2 small fw-semibold">Per person</div>
+      <div class="card-body pb-0">
+        <form method="get" class="row g-1 mb-2">
+          <div class="col-5"><input class="form-control form-control-sm" type="date" name="date_from" value="{{ date_from }}" aria-label="From"></div>
+          <div class="col-5"><input class="form-control form-control-sm" type="date" name="date_to" value="{{ date_to }}" aria-label="To"></div>
+          <div class="col-2"><button class="btn btn-outline-secondary btn-sm w-100" type="submit">Go</button></div>
+        </form>
+      </div>
+      <ul class="list-group list-group-flush small">
+        {% for row in by_user %}
+          <li class="list-group-item d-flex justify-content-between"><span>{{ row.username }}</span><span>{{ row.minutes }} min · {{ row.entries }} entr{{ row.entries|pluralize:"y,ies" }}</span></li>
+        {% empty %}<li class="list-group-item text-muted">No time in this range.</li>{% endfor %}
+      </ul>
+    </div>
+    <div class="card mb-3">
+      <div class="card-header py-2 small fw-semibold">Per sprint</div>
+      <ul class="list-group list-group-flush small">
+        {% for row in by_sprint %}
+          <li class="list-group-item d-flex justify-content-between"><a href="{% url 'web-sprint-detail' project.pk row.sprint_id %}">{{ row.name }}</a><span>{{ row.minutes }} min</span></li>
+        {% empty %}<li class="list-group-item text-muted">No time on sprint tasks.</li>{% endfor %}
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header py-2 small fw-semibold">Workload (open story points)</div>
+      <ul class="list-group list-group-flush small">
+        {% for row in workload %}
+          <li class="list-group-item d-flex justify-content-between"><span>{{ row.username }}</span><span>{{ row.open_tasks }} tasks · {{ row.open_points }} pts</span></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{% if creating %}New task{% else %}Edit {{ project.key }}-{{ task.number }}{% endif %}{% endblock %}
+{% block content %}
+{% include "partials/project_nav.html" %}
+<div class="row">
+  <div class="col-12 col-lg-8">
+    <h2 class="h5 mb-3">{% if creating %}New task{% else %}Edit {{ project.key }}-{{ task.number }}{% endif %}</h2>
+    <form method="post" class="card card-body" novalidate>
+      {% csrf_token %}
+      {% include "partials/form_fields.html" %}
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">{% if creating %}Create{% else %}Save{% endif %}</button>
+        <a class="btn btn-link" href="{% if creating %}{% url 'web-board' project.pk %}{% else %}{% url 'web-task-detail' project.pk task.number %}{% endif %}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

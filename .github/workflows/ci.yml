@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: pms_app
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: pms
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U pms_app"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      SECRET_KEY: ci-only-secret-key-not-used-anywhere-else
+      DEBUG: "False"
+      # Tests use plain http on localhost; production keeps the redirect on.
+      SECURE_SSL_REDIRECT: "False"
+      ALLOWED_HOSTS: localhost
+      DATABASE_URL: postgres://pms_app:ci-only-password@localhost:5432/pms
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: python manage.py check
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python -W error::DeprecationWarning manage.py test
+      - run: pip-audit -r requirements-dev.txt

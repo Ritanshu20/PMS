@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}{{ project.key }} backlog{% endblock %}
+{% block content %}
+{% include "partials/project_nav.html" %}
+<div class="row g-3">
+  <div class="col-12 col-xl-6">
+    <h2 class="h5">Backlog <span class="text-muted fs-6">open tasks not in a sprint</span></h2>
+    {% for task in backlog %}
+      <div class="card mb-2">
+        <div class="card-body py-2 d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div>
+            <a href="{% url 'web-task-detail' project.pk task.number %}">{{ project.key }}-{{ task.number }}</a>
+            {{ task.title }}
+            <span class="badge text-bg-light border">{{ task.get_priority_display }}</span>
+            {% if task.story_points is not None %}<span class="badge text-bg-info">{{ task.story_points }} pts</span>{% endif %}
+          </div>
+          {% if can.manage_sprints and sprints %}
+            <form method="post" action="{% url 'web-sprint-add-task' project.pk %}" class="d-flex gap-1">
+              {% csrf_token %}
+              <input type="hidden" name="task_number" value="{{ task.number }}">
+              <select name="sprint_id" class="form-select form-select-sm" aria-label="Sprint for {{ project.key }}-{{ task.number }}">
+                {% for sprint in sprints %}<option value="{{ sprint.pk }}">{{ sprint.name }} ({{ sprint.status }})</option>{% endfor %}
+              </select>
+              <button class="btn btn-outline-primary btn-sm" type="submit">Plan</button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <div class="empty-state">The backlog is empty. New tasks without a sprint appear here.</div>
+    {% endfor %}
+  </div>
+
+  <div class="col-12 col-xl-6">
+    <h2 class="h5">Sprints</h2>
+    {% for sprint in sprints %}
+      <div class="card mb-3 {% if sprint.status == 'active' %}border-primary{% endif %}">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div>
+            <a class="fw-semibold" href="{% url 'web-sprint-detail' project.pk sprint.pk %}">{{ sprint.name }}</a>
+            <span class="badge {% if sprint.status == 'active' %}text-bg-primary{% else %}text-bg-secondary{% endif %}">{{ sprint.status }}</span>
+            <span class="small text-muted">{{ sprint.start_date|date:"d M" }} – {{ sprint.end_date|date:"d M Y" }} · {{ sprint.planned_points }} pts</span>
+          </div>
+          {% if can.manage_sprints and sprint.status == 'planned' %}
+            <form method="post" action="{% url 'web-sprint-start' project.pk sprint.pk %}">
+              {% csrf_token %}<button class="btn btn-primary btn-sm" type="submit">Start sprint</button>
+            </form>
+          {% endif %}
+        </div>
+        <ul class="list-group list-group-flush small">
+          {% for task in sprint.planned_tasks %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span><a href="{% url 'web-task-detail' project.pk task.number %}">{{ project.key }}-{{ task.number }}</a> {{ task.title }} <span class="text-muted">· {{ task.get_status_display }}</span></span>
+              {% if can.manage_sprints %}
+                <form method="post" action="{% url 'web-sprint-remove-task' project.pk sprint.pk task.number %}">
+                  {% csrf_token %}<button class="btn btn-link btn-sm p-0" type="submit">Remove</button>
+                </form>
+              {% endif %}
+            </li>
+          {% empty %}
+            <li class="list-group-item text-muted">No tasks planned yet.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% empty %}
+      <div class="empty-state mb-3">No planned or active sprint.</div>
+    {% endfor %}
+
+    {% if can.manage_sprints %}
+      <details class="card card-body mb-3">
+        <summary class="fw-semibold">New sprint</summary>
+        <form method="post" action="{% url 'web-sprint-create' project.pk %}" class="mt-2" novalidate>
+          {% csrf_token %}
+          {% include "partials/form_fields.html" with form=sprint_form %}
+          <button class="btn btn-primary btn-sm" type="submit">Create sprint</button>
+        </form>
+      </details>
+    {% endif %}
+
+    {% if completed_sprints %}
+      <h3 class="h6">Completed sprints</h3>
+      <ul class="small">
+        {% for sprint in completed_sprints %}
+          <li><a href="{% url 'web-sprint-detail' project.pk sprint.pk %}">{{ sprint.name }}</a> · {{ sprint.completed_points }}/{{ sprint.committed_points }} pts</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

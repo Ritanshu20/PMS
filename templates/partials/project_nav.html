@@ -1,0 +1,15 @@
+{# Project header + tabs. Needs: project, membership (optional), active_tab. #}
+<div class="page-header d-flex flex-wrap align-items-center gap-2">
+  <h1 class="h4 mb-0">{{ project.name }}</h1>
+  <span class="key-chip">{{ project.key }}</span>
+  {% if project.is_archived %}<span class="badge text-bg-secondary">Archived · read-only</span>{% endif %}
+  {% if membership %}<span class="role-pill ms-auto">You are {{ membership.role }}</span>{% endif %}
+</div>
+<ul class="nav project-tabs mb-4 flex-nowrap overflow-auto">
+  <li class="nav-item"><a class="nav-link {% if active_tab == 'board' %}active{% endif %}" href="{% url 'web-board' project.pk %}">Board</a></li>
+  <li class="nav-item"><a class="nav-link {% if active_tab == 'backlog' %}active{% endif %}" href="{% url 'web-backlog' project.pk %}">Backlog &amp; sprints</a></li>
+  <li class="nav-item"><a class="nav-link {% if active_tab == 'dashboard' %}active{% endif %}" href="{% url 'web-dashboard' project.pk %}">Dashboard</a></li>
+  <li class="nav-item"><a class="nav-link {% if active_tab == 'time' %}active{% endif %}" href="{% url 'web-time-report' project.pk %}">Time</a></li>
+  <li class="nav-item"><a class="nav-link {% if active_tab == 'members' %}active{% endif %}" href="{% url 'web-members' project.pk %}">Members</a></li>
+  <li class="nav-item"><a class="nav-link {% if active_tab == 'activity' %}active{% endif %}" href="{% url 'web-activity' project.pk %}">Activity</a></li>
+</ul>

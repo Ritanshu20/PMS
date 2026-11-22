@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Not found{% endblock %}
+{% block content %}
+<div class="empty-state my-5">
+  <h1 class="h4">Page not found</h1>
+  <p class="mb-2">It does not exist, or you are not a member of this project.</p>
+  <a href="{% url 'web-project-list' %}">Back to my projects</a>
+</div>
+{% endblock %}

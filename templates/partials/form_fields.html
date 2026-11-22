@@ -1,0 +1,26 @@
+{% for field in form.hidden_fields %}{{ field }}{% endfor %}
+{% if form.non_field_errors %}
+  <div class="alert alert-danger">{% for error in form.non_field_errors %}{{ error }} {% endfor %}</div>
+{% endif %}
+{% for field in form.visible_fields %}
+  <div class="mb-3">
+    {% if field.widget_type == "checkboxselectmultiple" %}
+      <div class="form-label">{{ field.label }}</div>
+      <div>
+        {% for option in field %}
+          <div class="form-check form-check-inline">
+            {{ option.tag }}
+            <label class="form-check-label" for="{{ option.id_for_label }}">{{ option.choice_label }}</label>
+          </div>
+        {% empty %}
+          <span class="text-muted small">None yet.</span>
+        {% endfor %}
+      </div>
+    {% else %}
+      <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+      {{ field }}
+    {% endif %}
+    {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+    {% for error in field.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+  </div>
+{% endfor %}

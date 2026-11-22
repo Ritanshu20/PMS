@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h4 mb-0">Notifications</h1>
+  <div class="d-flex gap-2">
+    {% if unread_only %}
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'web-notifications' %}">Show all</a>
+    {% else %}
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'web-notifications' %}?unread=1">Unread only</a>
+    {% endif %}
+    {% if unread_notifications %}
+      <form method="post" action="{% url 'web-notifications-read-all' %}">
+        {% csrf_token %}<button class="btn btn-primary btn-sm" type="submit">Mark all read</button>
+      </form>
+    {% endif %}
+  </div>
+</div>
+<div class="list-group">
+  {% for notification in page_obj %}
+    <div class="list-group-item d-flex justify-content-between align-items-center gap-2 py-3 {% if not notification.read_at %}notification-unread{% endif %}">
+      <div>
+        <span class="badge text-bg-light border">{{ notification.get_type_display }}</span>
+        <span class="small text-muted">{{ notification.project.key }} · {{ notification.created_at|timesince }} ago</span>
+        <div>{{ notification.message }}</div>
+      </div>
+      <form method="post" action="{% url 'web-notification-open' notification.pk %}">
+        {% csrf_token %}<button class="btn btn-outline-primary btn-sm" type="submit">Open</button>
+      </form>
+    </div>
+  {% empty %}
+    <div class="empty-state">No notifications.</div>
+  {% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

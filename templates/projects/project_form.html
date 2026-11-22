@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}New project{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-6">
+    <h1 class="h4 mb-3">New project</h1>
+    <form method="post" class="card card-body" novalidate>
+      {% csrf_token %}
+      {% include "partials/form_fields.html" %}
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Create</button>
+        <a class="btn btn-link" href="{% url 'web-project-list' %}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

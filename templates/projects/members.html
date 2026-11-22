@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ project.key }} members{% endblock %}
+{% block content %}
+{% include "partials/project_nav.html" %}
+<div class="row g-3">
+  <div class="col-12 col-lg-8">
+    <div class="card">
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead><tr><th>User</th><th>Role</th><th class="text-end">Actions</th></tr></thead>
+          <tbody>
+            {% for member in members %}
+              <tr>
+                <td>{{ member.user.username }}{% if member.user.display_name %} <span class="text-muted small">({{ member.user.display_name }})</span>{% endif %}{% if member.pk == membership.pk %} <span class="badge text-bg-light border">you</span>{% endif %}</td>
+                <td>
+                  {% if can.manage_members %}
+                    <form method="post" action="{% url 'web-member-role' project.pk member.pk %}" class="d-flex gap-1">
+                      {% csrf_token %}
+                      <select name="role" class="form-select form-select-sm" aria-label="Role of {{ member.user.username }}">
+                        {% for value, label in role_choices %}<option value="{{ value }}" {% if value == member.role %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                      </select>
+                      <button class="btn btn-outline-secondary btn-sm" type="submit">Save</button>
+                    </form>
+                  {% else %}{{ member.role }}{% endif %}
+                </td>
+                <td class="text-end">
+                  <div class="d-inline-flex gap-1">
+                    {% if can.transfer_ownership and member.pk != membership.pk %}
+                      <form method="post" action="{% url 'web-transfer-ownership' project.pk member.pk %}" data-confirm="Make {{ member.user.username }} an owner and step down to manager?">
+                        {% csrf_token %}<button class="btn btn-link btn-sm p-0" type="submit">Transfer ownership</button>
+                      </form>
+                    {% endif %}
+                    {% if can.manage_members %}
+                      <form method="post" action="{% url 'web-member-remove' project.pk member.pk %}" data-confirm="Remove {{ member.user.username }} from the project?">
+                        {% csrf_token %}<button class="btn btn-link btn-sm p-0 text-danger" type="submit">Remove</button>
+                      </form>
+                    {% endif %}
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="small text-muted mt-2">Managers cannot change or remove owners. A project always keeps at least one owner.</p>
+  </div>
+  <div class="col-12 col-lg-4">
+    {% if can.manage_members %}
+      <div class="card card-body mb-3">
+        <h2 class="h6">Add member</h2>
+        <form method="post" action="{% url 'web-member-add' project.pk %}" novalidate>
+          {% csrf_token %}
+          {% include "partials/form_fields.html" with form=add_form %}
+          <button class="btn btn-primary btn-sm" type="submit">Add</button>
+        </form>
+      </div>
+    {% endif %}
+    {% if can.archive_project %}
+      <div class="card card-body border-warning">
+        <h2 class="h6">Archive project</h2>
+        <p class="small">Archived projects become read-only for everyone.</p>
+        <form method="post" action="{% url 'web-project-archive' project.pk %}" data-confirm="Archive {{ project.name }}? It becomes read-only.">
+          {% csrf_token %}<button class="btn btn-outline-warning btn-sm" type="submit">Archive</button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ project.key }} board{% endblock %}
+{% block content %}
+{% include "partials/project_nav.html" %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <p class="text-muted small mb-0">
+    {% if can.change_task_status %}Drag cards between columns. The server checks every move (workflow, blockers, versions).{% else %}Read-only view for your role.{% endif %}
+  </p>
+  {% if can.create_task %}<a class="btn btn-primary btn-sm px-3" href="{% url 'web-task-create' project.pk %}">+ New task</a>{% endif %}
+</div>
+<div id="board-alert" class="alert alert-danger d-none" role="alert"></div>
+<div class="board" id="board">
+  {% for status, label, tasks in columns %}
+    <section class="board-column card" data-column="{{ status }}" aria-label="{{ label }}">
+      <header class="card-header d-flex justify-content-between align-items-center py-2 px-3">
+        <span class="fw-semibold small">{{ label }}</span>
+        <span class="badge rounded-pill column-count">{{ tasks|length }}</span>
+      </header>
+      <div class="board-column-body card-body p-2" data-status="{{ status }}">
+        {% for task in tasks %}
+          <article class="card task-card mb-2 priority-{{ task.priority }}"
+                   {% if can.change_task_status %}draggable="true"{% endif %}
+                   data-number="{{ task.number }}" data-version="{{ task.version }}"
+                   data-move-url="{% url 'web-task-move' project.pk task.number %}">
+            <div class="card-body p-2 px-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="task-key">{{ project.key }}-{{ task.number }}</span>
+                <span class="priority-pill priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+              </div>
+              <a class="d-block task-title" href="{% url 'web-task-detail' project.pk task.number %}">{{ task.title }}</a>
+              {% if task.labels.all or task.blocked_by_links.all %}
+                <div class="d-flex flex-wrap gap-1 mt-2">
+                  {% for link in task.blocked_by_links.all %}{% if link.blocker.status != "done" %}<span class="blocked-chip">blocked by {{ project.key }}-{{ link.blocker.number }}</span>{% endif %}{% endfor %}
+                  {% for label in task.labels.all %}<span class="badge label-badge" data-color="{{ label.color }}">{{ label.name }}</span>{% endfor %}
+                </div>
+              {% endif %}
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                {% if task.story_points is not None %}<span class="points-chip">{{ task.story_points }} pts</span>{% else %}<span></span>{% endif %}
+                {% if task.assignee %}
+                  <span class="avatar avatar-sm" title="Assigned to {{ task.assignee.username }}">{{ task.assignee.username|slice:":1"|upper }}</span>
+                {% else %}
+                  <span class="small text-muted">Unassigned</span>
+                {% endif %}
+              </div>
+            </div>
+          </article>
+        {% empty %}
+          <p class="text-muted small text-center my-4 empty-column">No tasks</p>
+        {% endfor %}
+      </div>
+    </section>
+  {% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/board.js' %}"></script>{% endblock %}

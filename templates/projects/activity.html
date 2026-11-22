@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ project.key }} activity{% endblock %}
+{% block content %}
+{% include "partials/project_nav.html" %}
+<div class="card">
+  <ul class="list-group list-group-flush small">
+    {% for log in page_obj %}
+      <li class="list-group-item">
+        <span class="text-muted">{{ log.created_at|date:"d M Y H:i" }}</span> ·
+        <strong>{{ log.actor.username|default:"someone" }}</strong> · {{ log.verb }} · {{ log.target_type }} #{{ log.target_id }}
+      </li>
+    {% empty %}
+      <li class="list-group-item text-muted">No activity yet.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

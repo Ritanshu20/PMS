@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}My tasks{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+  <h1 class="h4 mb-0">My tasks</h1>
+  {% if include_done %}
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'web-my-tasks' %}">Hide done</a>
+  {% else %}
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'web-my-tasks' %}?include_done=true">Show done</a>
+  {% endif %}
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Task</th><th>Status</th><th>Priority</th><th>Due</th></tr></thead>
+      <tbody>
+        {% for task in page_obj %}
+          <tr>
+            <td><a href="{% url 'web-task-detail' task.project_id task.number %}">{{ task.project.key }}-{{ task.number }}</a> {{ task.title }}</td>
+            <td><span class="status-pill status-{{ task.status }}">{{ task.get_status_display }}</span></td>
+            <td><span class="priority-pill priority-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
+            <td>{{ task.due_date|date:"d M Y"|default:"-" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="4"><div class="empty-state my-2">Nothing assigned to you. Enjoy the calm.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

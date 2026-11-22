@@ -1,0 +1,17 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Server error · PMS</title>
+  <link rel="stylesheet" href="{% static 'vendor/bootstrap.min.css' %}">
+</head>
+<body class="bg-light">
+  {# No base.html here: the 500 page must render even when the database or context processors fail. #}
+  <main class="container py-5 text-center">
+    <h1 class="h4">Something went wrong</h1>
+    <p>The error was logged. Please try again in a moment.</p>
+    <a href="/">Go to the start page</a>
+  </main>
+</body>
+</html>

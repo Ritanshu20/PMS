@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Not allowed{% endblock %}
+{% block content %}
+<div class="empty-state my-5">
+  <h1 class="h4">You can't do that</h1>
+  <p class="mb-2">{% if exception %}{{ exception }}{% else %}Your project role does not allow this action.{% endif %}</p>
+  <a href="{% url 'web-project-list' %}">Back to my projects</a>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ sprint.name }}{% endblock %}
+{% block content %}
+{% include "partials/project_nav.html" %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+  <div>
+    <h2 class="h5 mb-1">{{ sprint.name }} <span class="badge text-bg-secondary">{{ sprint.status }}</span></h2>
+    <div class="small text-muted">{{ sprint.start_date|date:"d M Y" }} – {{ sprint.end_date|date:"d M Y" }}{% if sprint.goal %} · Goal: {{ sprint.goal }}{% endif %}</div>
+    <div class="small">Committed {{ sprint.committed_points }} pts{% if sprint.status == 'completed' %} · completed {{ sprint.completed_points }} pts{% endif %}</div>
+  </div>
+  {% if can.manage_sprints and sprint.status == 'planned' %}
+    <form method="post" action="{% url 'web-sprint-start' project.pk sprint.pk %}">
+      {% csrf_token %}<button class="btn btn-primary btn-sm" type="submit">Start sprint</button>
+    </form>
+  {% endif %}
+</div>
+
+<div class="row g-3">
+  <div class="col-12 col-lg-7">
+    <div class="card mb-3">
+      <div class="card-header py-2 small fw-semibold">Burndown</div>
+      <div class="card-body">
+        {% if burndown_chart %}
+          <div class="chart-box"><canvas id="burndown-chart" aria-label="Burndown chart" role="img"></canvas></div>
+          {{ burndown_chart|json_script:"burndown-data" }}
+        {% else %}
+          <div class="empty-state">The burndown starts when the sprint starts.</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card mb-3">
+      <div class="card-header py-2 small fw-semibold">Velocity · average of last 3: {{ velocity.average_velocity }} pts</div>
+      <div class="card-body">
+        {% if velocity.sprints %}
+          <div class="chart-box"><canvas id="velocity-chart" aria-label="Velocity chart" role="img"></canvas></div>
+          {{ velocity_chart|json_script:"velocity-data" }}
+        {% else %}
+          <div class="empty-state">No completed sprint yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-5">
+    <div class="card mb-3">
+      <div class="card-header py-2 small fw-semibold">Tasks ({{ tasks|length }})</div>
+      <ul class="list-group list-group-flush small">
+        {% for task in tasks %}
+          <li class="list-group-item d-flex justify-content-between">
+            <span><a href="{% url 'web-task-detail' project.pk task.number %}">{{ project.key }}-{{ task.number }}</a> {{ task.title }}</span>
+            <span class="d-flex align-items-center gap-1 text-nowrap"><span class="status-pill status-{{ task.status }}">{{ task.get_status_display }}</span>{% if task.story_points is not None %}<span class="points-chip">{{ task.story_points }}p</span>{% endif %}</span>
+          </li>
+        {% empty %}<li class="list-group-item text-muted">No tasks.</li>{% endfor %}
+      </ul>
+    </div>
+
+    {% if can.manage_sprints and sprint.status == 'active' %}
+      <div class="card card-body">
+        <h3 class="h6">Complete sprint</h3>
+        <form method="post" action="{% url 'web-sprint-complete' project.pk sprint.pk %}" data-confirm="Complete {{ sprint.name }}? This cannot be undone.">
+          {% csrf_token %}
+          {% for choice in complete_form.unfinished_action %}
+            <div class="form-check">{{ choice.tag }} <label class="form-check-label" for="{{ choice.id_for_label }}">{{ choice.choice_label }}</label></div>
+          {% endfor %}
+          <label class="form-label mt-2" for="{{ complete_form.target_sprint_id.id_for_label }}">Planned sprint (if moving to a sprint)</label>
+          {{ complete_form.target_sprint_id }}
+          <button class="btn btn-warning btn-sm mt-2" type="submit">Complete sprint</button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="{% static 'vendor/chart.umd.min.js' %}"></script>
+<script src="{% static 'js/charts.js' %}"></script>
+{% endblock %}
