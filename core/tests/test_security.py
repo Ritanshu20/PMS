@@ -39,6 +39,11 @@ class DeploySettingsTests(TestCase):
             DEBUG="False",
             SECRET_KEY=secrets.token_urlsafe(50),
             ALLOWED_HOSTS="pms.example.com",
+            # Pin production values: CI sets SECURE_SSL_REDIRECT=False for its own http tests,
+            # and os.environ (or a developer's .env) must not leak into this check.
+            SECURE_SSL_REDIRECT="True",
+            SECURE_HSTS_SECONDS="31536000",
+            SECURE_HSTS_INCLUDE_SUBDOMAINS="True",
         )
         result = subprocess.run(  # noqa: S603 - fixed arguments, our own manage.py
             [sys.executable, "manage.py", "check", "--deploy"],
